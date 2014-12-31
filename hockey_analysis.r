@@ -58,42 +58,7 @@ seasonsteamscombined = rbind_all(list(s1314corr, s1112corr, s1011corr, s0910corr
 
 attach(seasonsteamscombined)
 
-lm.fit2=lm(wins2 ~ wins1)
-summary(lm.fit2)
-names(lm.fit2)
-coef(lm.fit2)
-confint(lm.fit2)
-
-predicted = as.data.frame(predict(lm.fit2, wins1=wins1, interval = "confidence"))
-predict(lm.fit2, data.frame(wins1=(c(.3, .5, .8))), interval = "prediction")
-
-plot(wins1, wins2)
-abline(lm.fit2)
-
-plot(wins1, wins2, pch=19)
-abline(lm.fit2)
-
-par(mfrow=c(2,2))
-plot(lm.fit2)
-
-
-par(mfrow=c(1,1))
-plot(predict(lm.fit2), residuals(lm.fit2))
-plot(predict(lm.fit2), rstudent(lm.fit2))
-
-lm.fit=lm(wins2 ~ wins1 + goals1 + goalsfirstfor1 + penaltycallratio1)
-summary(lm.fit)
-
-summary(lm.fit)$r.sq # r-squared
-summary(lm.fit)$sigma # rse
-
 library("car")
-
-vif(lm.fit) # vif 
-
-anova(lm.fit, lm.fit2)
-
-
 
 model1 = lm(wins2 ~ wins1) 
 model2 = lm(wins2 ~ wins1 + goals1)
@@ -105,21 +70,68 @@ model7 = lm(wins2 ~ corsievenclose1 + offevents1 + goals1 + shots1 + goalsfirst1
 
 seasonsteamscombinedtrim = seasonsteamscombined[-grep("2$", names(seasonsteamscombined))]
 seasonsteamscombinedtrim$wins2 = seasonsteamscombined$wins2  
+seasonsteamscombinedtrim$pctgameshome2 = seasonsteamscombined$pctgameshome2  
 
-model8 = lm(wins2 ~. -team, data = seasonsteamscombinedtrim)
+model8 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
 
 summary(model8)
 coef(model8)
 confint(model8)
 par(mfrow=c(2,2))
 plot(model8)
-summary(model8)$r.sq # r-squared
+plot(predict(model8), residuals(model8))
+plot(predict(model8), rstudent(model8))
 summary(model8)$sigma # rse
-library("car")
+summary(model8)$r.sq # r-squared
+summary(model8)$adj.r.squared# adj r-squared
+summary(model8)$aliased # show which variables are aliased (basically an r term for perfect collinearity)
 vif(model8) # vif 
 anova(model1, model2, model3, model4, model5, model6, model7, model8)
 
-attach(seasonsteamscombined)
+summary(model8)$r.sq 
+summary(model7)$r.sq 
+summary(model6)$r.sq 
+summary(model5)$r.sq 
+summary(model4)$r.sq 
+summary(model3)$r.sq 
+summary(model2)$r.sq 
+summary(model1)$r.sq 
+
+summary(model8)$adj.r.squared
+summary(model7)$adj.r.squared
+summary(model6)$adj.r.squared
+summary(model5)$adj.r.squared
+summary(model4)$adj.r.squared
+summary(model3)$adj.r.squared
+summary(model2)$adj.r.squared
+summary(model1)$adj.r.squared
+
+
+library(MASS)
+step <- stepAIC(model8, direction="both")
+step$anova # display results
+
+# winner from above:
+
+model9 = lm(wins2 ~ corsi1 + corsiclose1 + corsi25close1 + wins1 + goalsfor1 + 
+    goalsfirst1 + goalssecondfor1 + goalsthirdagainst1 + pctgoalstipfor1 + 
+    pctgoalsslapfor1 + pctgoalswristfor1 + pctgoals25against1 + 
+    pctshottipagainst1 + pctshotslapfor1 + pctshotwristfor1 + 
+    pctshotwristagainst1 + shots1 + pctgoalforpp1 + wins11 + 
+    pctgameshome2)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 predicted8 = as.data.frame(predict(model8, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
 predicted7 = as.data.frame(predict(model7, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
@@ -200,32 +212,29 @@ seasonsteamscombinedpredicttrim$bigdiffwin1win2 = ifelse(abs(seasonsteamscombine
 seasonsteamscombinedpredicttrim$predicted8within3 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual) < 4, 1, 0)
 seasonsteamscombinedpredicttrim$predicted8below3 = ifelse(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual > 3, 1, 0)
 seasonsteamscombinedpredicttrim$predicted8above3 = ifelse(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual > 3, 1, 0)
+
 seasonsteamscombinedpredicttrim$rawpredicted8windiff = round(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual)
 
-
 View(arrange(select(seasonsteamscombinedpredicttrim, team, wins1, predicted8, wins2, wins1actual, predicted8actual, wins2actual, wins1windiff, predicted8windiff, bigdiffwin1win2, predicted8within3, predicted8above3, predicted8below3),desc(bigdiffwin1win2), desc(wins1windiff)))
+
+seasonsteamscombinedpredicttrim %>%
+summarize(correct = sum(predicted8within3), above = sum(predicted8above3), below = sum(predicted8below3))
+
+hist(seasonsteamscombinedpredicttrim$predicted8windiff)
 
 mean(seasonsteamscombinedpredicttrim$wins1windiff)
 mean(seasonsteamscombinedpredicttrim$predicted8windiff)
 mean(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
 
-seasonsteamscombinedpredicttrim %>%
-summarize(correct = sum(predicted8within3), above = sum(predicted8above3), below = sum(predicted8below3))
 
-#beautiful -- just slightly underpredicts, but basically no directional bias 
-hist(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
-
-
-# overfitting: http://blog.minitab.com/blog/adventures-in-statistics/multiple-regession-analysis-use-adjusted-r-squared-and-predicted-r-squared-to-include-the-correct-number-of-variables
-
-
-
-# notice that on big changes, it gets direction but not magnitude right.  how to fix that?
-# play with variable inclusion, interaction, weighting, functional form 
+# within 5 either way = same 
+# above 5 = way better 
+# below 5% = way worse 
+# overpredict vs underpredict 
 
 # check to see how coefficients change when you add new variables to regressions
 
-# include season team combos as unique id
+
 
 # make dataframe or columns with actuals and predicted from each model and analyze abs diffs, mean, median, max, rank, spot check, etc
 # look at regression libraries in r

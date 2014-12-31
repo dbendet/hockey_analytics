@@ -1,4 +1,3 @@
-
 library(dplyr)
 
 load("/Users/dbendet/Documents/Code/r/hockey_analytics/source-data/nhlscrapr-20102011.RData")
@@ -616,40 +615,53 @@ arrange(gcode, gamecoderank) %>%
 mutate(winpctopp = ifelse(gamecoderank == 1, lead(winpct), lag(winpct)))
 
 
+# away/home games 
+# away/home winpct 
 
 
 
-
-# win pct excluding first 10 games and then second half strength of schedule by win pct
-# wins against over 500 winpct teams
-# games against over 500 winpct teams
-# wins excluding first 10 games of season
-# wins including only last 10 of first half of season
-
-# break out for/against to include defensive stats 
-
-# percents of team-for for goal stats intead of just ratio of for/against
-# see which variables have lowest (highest) rank and correlation when adding all seasons tegether
-# do odd/even games as well and 21/61 & 61/21 splits 
-# predict playoffs 
+# look at rank prediction as well as magnitude
+# do playoff prediction as well as odd/even games and 21/61 & 61/21 splits  
 # try predicting goals, not wins 
-# do regression 
 # pick single game winners 
 
-# home/away games 
-# longest win streak
+# other variables to maybe include:
+# longest wining streak
 # longest losing streak
 # games per day
+# distance travelled
+# state team is located 
+# new coach 
 # period wins 
+# open corsi 
+# closed corsi
+# faceoff wins
+# shot quality
+# zone entries
+# zone exits
+# passing stats
+# hits
+# injuries
+# prior year performance
+# years since team origination
+# pct players north america vs european
+# age of players
+# prior year allstars 
+# stronger defensive vs offensive players
+# pct of team turnover from prior year 
+# strength of goalie and backup goalie 
+# distribution of player ice team 
+# avg shift length
+# exclude empty net goals
+
+
 
 
 # control for outliers 
 # double check all data quality and code 
 # get rid of variables with small sample sizes
 # think about which variables should be percents vs corsi style percents vs raw values 
-
-
-# now segment, open corsi, corsi magnitude not just direction, closed corsi, spot check games and look out for missing data
+# spot check games and look out for missing data
 # build automated scouting report for any game, django app or something
 
 
@@ -734,6 +746,10 @@ x = x %>% group_by(team) %>%
   mutate(shot251 = ifelse(team == hometeam, gamesshot25home - gamesshot25away, gamesshot25away - gamesshot25home)) %>%
   mutate(shots1 = ifelse(team == hometeam, gamesshothome - gamesshotaway, gamesshotaway - gamesshothome)) %>%
   mutate(wins1 = ifelse(team == hometeam, ifelse(home.score > away.score, 1, 0), ifelse(away.score > home.score, 1, 0))) %>%
+  mutate(winshome1 = ifelse(team == hometeam, ifelse(home.score > away.score, 1, 0), 0)) %>%
+  mutate(winsaway1 = ifelse(team == awayteam, ifelse(away.score > home.score, 1, 0), 0)) %>%
+  mutate(gameshome1 = ifelse(team == hometeam, 1, 0)) %>%
+  mutate(gamesaway1 = ifelse(team == awayteam, 1, 0)) %>%
   mutate(wins11 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) == 1, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) == 1, 1, 0))) %>%
   mutate(wins21 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) == 2, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) == 2, 1, 0))) %>%
   mutate(wins31 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) > 2, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) > 2, 1, 0))) %>%
@@ -824,6 +840,10 @@ y = y %>% group_by(team) %>%
   mutate(shot252 = ifelse(team == hometeam, gamesshot25home - gamesshot25away, gamesshot25away - gamesshot25home)) %>%
   mutate(shots2 = ifelse(team == hometeam, gamesshothome - gamesshotaway, gamesshotaway - gamesshothome)) %>%
   mutate(wins2 = ifelse(team == hometeam, ifelse(home.score > away.score, 1, 0), ifelse(away.score > home.score, 1, 0))) %>%
+  mutate(winshome2 = ifelse(team == hometeam, ifelse(home.score > away.score, 1, 0), 0)) %>%
+  mutate(winsaway2 = ifelse(team == awayteam, ifelse(away.score > home.score, 1, 0), 0)) %>%
+  mutate(gameshome2 = ifelse(team == hometeam, 1, 0)) %>%
+  mutate(gamesaway2 = ifelse(team == awayteam, 1, 0)) %>%
   mutate(wins12 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) == 1, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) == 1, 1, 0))) %>%
   mutate(wins22 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) == 2, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) == 2, 1, 0))) %>%
   mutate(wins32 = ifelse(team == hometeam, ifelse(home.score > away.score & abs(home.score - away.score) > 2, 1, 0), ifelse(away.score > home.score & abs(home.score - away.score) > 2, 1, 0))) %>%
@@ -861,6 +881,10 @@ summarise(corsi1 = sum(corsi1, na.rm=TRUE)/41,
           offeventsclose2 = sum(offeventsclose2, na.rm=TRUE)/41,              
           wins1 = sum(wins1, na.rm=TRUE)/41,
           wins2 = sum(wins2, na.rm=TRUE)/41,
+          winspcthome1 = sum(winshome1, na.rm=TRUE)/sum(gameshome1, na.rm=TRUE),
+          winspctaway1 = sum(winsaway1, na.rm=TRUE)/sum(gamesaway1, na.rm=TRUE),
+          pctgameshome1 = sum(gameshome1, na.rm=TRUE)/41,
+          pctgameshome2 = sum(gameshome2, na.rm=TRUE)/41,
           goals1 = sum(goalsfor1, na.rm=TRUE)/sum(goalsagainst1, na.rm=TRUE),
           goals2 = sum(goalsfor2, na.rm=TRUE)/sum(goalsagainst2, na.rm=TRUE),
           goalsfor1 = sum(goalsfor1, na.rm=TRUE),
@@ -953,8 +977,8 @@ summarise(corsi1 = sum(corsi1, na.rm=TRUE)/41,
           winsrecent2 = sum(winsrecent2, na.rm=TRUE),
           wins500excstart1 = sum(wins500excstart1, na.rm=TRUE),
           wins500excstart2 = sum(wins500excstart2, na.rm=TRUE),
-          games5001 = sum(games5001, na.rm=TRUE),
-          games5002 = sum(games5002, na.rm=TRUE),
+          games5001 = sum(games5001, na.rm=TRUE)/41,
+          games5002 = sum(games5002, na.rm=TRUE)/41,
           penaltycallratio1 = sum(penaltydrawn1, na.rm=TRUE)/sum(penaltytaken1, na.rm=TRUE),
           penaltycallratio2 = sum(penaltydrawn2, na.rm=TRUE)/sum(penaltytaken2, na.rm=TRUE))
 
@@ -1023,35 +1047,9 @@ s1011finalcorr = as.data.frame(cor(select(
   shootingpctfor1,
   shootingpctagainst1,
   pdo1,
-  pdo2)))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  pdo2,
+  winspcthome1,
+  winspctaway1,
+  pctgameshome1,
+  pctgameshome2)))
 
