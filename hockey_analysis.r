@@ -120,13 +120,44 @@ model9 = lm(wins2 ~ corsi1 + corsiclose1 + corsi25close1 + wins1 + goalsfor1 +
     pctshotwristagainst1 + shots1 + pctgoalforpp1 + wins11 + 
     pctgameshome2)
 
+anova(model1, model2, model3, model4, model5, model6, model7, model8, model9)
+
+summary(model9)$r.sq
+summary(model8)$r.sq 
+summary(model7)$r.sq 
+summary(model6)$r.sq 
+summary(model5)$r.sq 
+summary(model4)$r.sq 
+summary(model3)$r.sq 
+summary(model2)$r.sq 
+summary(model1)$r.sq 
+
+summary(model9)$adj.r.squared
+summary(model8)$adj.r.squared
+summary(model7)$adj.r.squared
+summary(model6)$adj.r.squared
+summary(model5)$adj.r.squared
+summary(model4)$adj.r.squared
+summary(model3)$adj.r.squared
+summary(model2)$adj.r.squared
+summary(model1)$adj.r.squared
 
 
 
+library(leaps)
+model8 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
+leaps<-regsubsets(wins2 ~., data=seasonsteamscombinedtrim[, names(seasonsteamscombinedtrim) != "team"], nbest=1, method="forward", really.big=FALSE)
+summary(leaps)
+plot(leaps,scale="r2")
+library(car)
+subsets(leaps, statistic="rsq")
 
 
-
-
+library(relaimpo)
+calc.relimp(model9,type=c("lmg","last","first","pratt"), rela=TRUE)
+boot <- boot.relimp(model9, b = 1000, type = c("lmg", "last", "first", "pratt"), rank = TRUE, diff = TRUE, rela = TRUE)
+booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result
 
 
 
