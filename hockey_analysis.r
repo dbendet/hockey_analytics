@@ -195,25 +195,37 @@ seasonsteamscombinedpredicttrim$predicted8actual = seasonsteamscombinedpredicttr
 seasonsteamscombinedpredicttrim$wins2actual = seasonsteamscombinedpredicttrim$wins2*41
 seasonsteamscombinedpredicttrim$wins1windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$wins1actual))
 seasonsteamscombinedpredicttrim$predicted8windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual))
-
 seasonsteamscombinedpredicttrim$bigdiffwin1win2 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$wins1actual) > 5, 1, 0)
 
-View(arrange(select(seasonsteamscombinedpredicttrim, team, wins1, predicted8, wins2, wins1actual, predicted8actual, wins2actual, wins1windiff, predicted8windiff, bigdiffwin1win2),desc(bigdiffwin1win2), desc(wins1windiff)))
+seasonsteamscombinedpredicttrim$predicted8within3 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual) < 4, 1, 0)
+seasonsteamscombinedpredicttrim$predicted8below3 = ifelse(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual > 3, 1, 0)
+seasonsteamscombinedpredicttrim$predicted8above3 = ifelse(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual > 3, 1, 0)
+seasonsteamscombinedpredicttrim$rawpredicted8windiff = round(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual)
+
+
+View(arrange(select(seasonsteamscombinedpredicttrim, team, wins1, predicted8, wins2, wins1actual, predicted8actual, wins2actual, wins1windiff, predicted8windiff, bigdiffwin1win2, predicted8within3, predicted8above3, predicted8below3),desc(bigdiffwin1win2), desc(wins1windiff)))
 
 mean(seasonsteamscombinedpredicttrim$wins1windiff)
 mean(seasonsteamscombinedpredicttrim$predicted8windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
 
-# add schedule str second half 
+seasonsteamscombinedpredicttrim %>%
+summarize(correct = sum(predicted8within3), above = sum(predicted8above3), below = sum(predicted8below3))
+
+#beautiful -- just slightly underpredicts, but basically no directional bias 
+hist(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
 
 
-# within 5% either way = same 
-# above 5% = way better 
-# below 5% = way worse 
-# overpredict vs underpredict 
+# overfitting: http://blog.minitab.com/blog/adventures-in-statistics/multiple-regession-analysis-use-adjusted-r-squared-and-predicted-r-squared-to-include-the-correct-number-of-variables
+
+
+
+# notice that on big changes, it gets direction but not magnitude right.  how to fix that?
+# play with variable inclusion, interaction, weighting, functional form 
 
 # check to see how coefficients change when you add new variables to regressions
 
-
+# include season team combos as unique id
 
 # make dataframe or columns with actuals and predicted from each model and analyze abs diffs, mean, median, max, rank, spot check, etc
 # look at regression libraries in r

@@ -952,8 +952,8 @@ summarise(corsi1 = sum(corsi1, na.rm=TRUE)/41,
           winsrecent2 = sum(winsrecent2, na.rm=TRUE),
           wins500excstart1 = sum(wins500excstart1, na.rm=TRUE),
           wins500excstart2 = sum(wins500excstart2, na.rm=TRUE),
-          games5001 = sum(games5001, na.rm=TRUE),
-          games5002 = sum(games5002, na.rm=TRUE),
+          games5001 = sum(games5001, na.rm=TRUE)/41,
+          games5002 = sum(games5002, na.rm=TRUE)/41,
           penaltycallratio1 = sum(penaltydrawn1, na.rm=TRUE)/sum(penaltytaken1, na.rm=TRUE),
           penaltycallratio2 = sum(penaltydrawn2, na.rm=TRUE)/sum(penaltytaken2, na.rm=TRUE))
 
@@ -1022,5 +1022,7 @@ s1314finalcorr = as.data.frame(cor(select(
   shootingpctfor1,
   shootingpctagainst1,
   pdo1,
-  pdo2)))
+  pdo2, 
+  games5001, 
+  games5002)))
 
