@@ -61,111 +61,133 @@ attach(seasonsteamscombined)
 library("car")
 
 model1 = lm(wins2 ~ wins1) 
-model2 = lm(wins2 ~ wins1 + goals1)
-model3 = lm(wins2 ~ corsi1)
-model4 = lm(wins2 ~ corsi1 + corsievenclose1 + corsiclose1 + corsitied1 + offevents1 + offeventsclose1 + goals1 + corsieven1 + shots1 + goalsfirst1 + corsi25close1 + goalsclose1 + winsexcstart1 + wins1 + wins31 + winsregot1 + wins500pct1 + penaltycallratio1 + goalsfirstagainst1+ goalsagainst1)
-model5 = lm(wins2 ~ corsi1 + corsievenclose1 + corsiclose1 + offevents1 + offeventsclose1 + goals1 + shots1 + goalsfirst1 + corsi25close1 + winsexcstart1 + wins1 + wins31 + winsregot1 + wins500pct1 + penaltycallratio1 + goalsagainst1)
-model6 = lm(wins2 ~ corsi1 + corsievenclose1 + offevents1 + goals1 + shots1 + goalsfirst1 + corsi25close1 + winsexcstart1 + wins31 + winsregot1 + wins500pct1 + penaltycallratio1 + goalsagainst1)
-model7 = lm(wins2 ~ corsievenclose1 + offevents1 + goals1 + shots1 + goalsfirst1 + corsi25close1 + winsexcstart1 + wins31 + winsregot1 + wins500pct1 + penaltycallratio1 + goalsagainst1)
+model2 = lm(wins2 ~ corsi1)
 
 seasonsteamscombinedtrim = seasonsteamscombined[-grep("2$", names(seasonsteamscombined))]
 seasonsteamscombinedtrim$wins2 = seasonsteamscombined$wins2  
 seasonsteamscombinedtrim$pctgameshome2 = seasonsteamscombined$pctgameshome2  
+seasonsteamscombinedtrim$games5002 = seasonsteamscombined$games5002  
 
-model8 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
 
-summary(model8)
-coef(model8)
-confint(model8)
+model3 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
+
+summary(model3)
+coef(model3)
+confint(model3)
 par(mfrow=c(2,2))
-plot(model8)
-plot(predict(model8), residuals(model8))
-plot(predict(model8), rstudent(model8))
-summary(model8)$sigma # rse
-summary(model8)$r.sq # r-squared
-summary(model8)$adj.r.squared# adj r-squared
-summary(model8)$aliased # show which variables are aliased (basically an r term for perfect collinearity)
-vif(model8) # vif 
-anova(model1, model2, model3, model4, model5, model6, model7, model8)
+plot(model3)
+plot(predict(model3), residuals(model3))
+plot(predict(model3), rstudent(model3))
+summary(model3)$sigma # rse
+summary(model3)$r.sq # r-squared
+summary(model3)$adj.r.squared# adj r-squared
+summary(model3)$aliased # show which variables are aliased (basically an r term for perfect collinearity)
+vif(model3) # vif 
+anova(model1, model2, model3)
 
-summary(model8)$r.sq 
-summary(model7)$r.sq 
-summary(model6)$r.sq 
-summary(model5)$r.sq 
-summary(model4)$r.sq 
+
+
 summary(model3)$r.sq 
 summary(model2)$r.sq 
 summary(model1)$r.sq 
 
-summary(model8)$adj.r.squared
-summary(model7)$adj.r.squared
-summary(model6)$adj.r.squared
-summary(model5)$adj.r.squared
-summary(model4)$adj.r.squared
 summary(model3)$adj.r.squared
 summary(model2)$adj.r.squared
 summary(model1)$adj.r.squared
 
 
 library(MASS)
-step <- stepAIC(model8, direction="both")
+step <- stepAIC(model3, direction="both")
 step$anova # display results
 
 # winner from above:
 
-model9 = lm(wins2 ~ corsi1 + corsiclose1 + corsi25close1 + wins1 + goalsfor1 + 
+model4 = lm(wins2 ~ corsi1 + corsiclose1 + corsi25close1 + wins1 + goalsfor1 + 
     goalsfirst1 + goalssecondfor1 + goalsthirdagainst1 + pctgoalstipfor1 + 
     pctgoalsslapfor1 + pctgoalswristfor1 + pctgoals25against1 + 
     pctshottipagainst1 + pctshotslapfor1 + pctshotwristfor1 + 
     pctshotwristagainst1 + shots1 + pctgoalforpp1 + wins11 + 
     pctgameshome2)
 
-anova(model1, model2, model3, model4, model5, model6, model7, model8, model9)
 
-summary(model9)$r.sq
-summary(model8)$r.sq 
-summary(model7)$r.sq 
-summary(model6)$r.sq 
-summary(model5)$r.sq 
+anova(model1, model2, model3, model4)
+
+
 summary(model4)$r.sq 
 summary(model3)$r.sq 
 summary(model2)$r.sq 
 summary(model1)$r.sq 
 
-summary(model9)$adj.r.squared
-summary(model8)$adj.r.squared
-summary(model7)$adj.r.squared
-summary(model6)$adj.r.squared
-summary(model5)$adj.r.squared
 summary(model4)$adj.r.squared
 summary(model3)$adj.r.squared
 summary(model2)$adj.r.squared
 summary(model1)$adj.r.squared
 
 
-
-library(leaps)
-model8 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
-leaps<-regsubsets(wins2 ~., data=seasonsteamscombinedtrim[, names(seasonsteamscombinedtrim) != "team"], nbest=1, method="forward", really.big=FALSE)
-summary(leaps)
-plot(leaps,scale="r2")
-library(car)
-subsets(leaps, statistic="rsq")
-
-
-library(relaimpo)
-calc.relimp(model9,type=c("lmg","last","first","pratt"), rela=TRUE)
-boot <- boot.relimp(model9, b = 1000, type = c("lmg", "last", "first", "pratt"), rank = TRUE, diff = TRUE, rela = TRUE)
-booteval.relimp(boot) # print result
-plot(booteval.relimp(boot,sort=TRUE)) # plot result
+# library(leaps)
+# model3 = lm(wins2 ~. -team ,data = seasonsteamscombinedtrim)
+# leaps<-regsubsets(wins2 ~., data=seasonsteamscombinedtrim[, names(seasonsteamscombinedtrim) != "team"], nbest=1, method="forward", really.big=FALSE)
+# summary(leaps)
+# plot(leaps,scale="r2")
+# library(car)
+# subsets(leaps, statistic="rsq")
 
 
+# library(relaimpo)
+# calc.relimp(model4,type=c("lmg","last","first","pratt"), rela=TRUE)
+# boot <- boot.relimp(model4, b = 1000, type = c("lmg", "last", "first", "pratt"), rank = TRUE, diff = TRUE, rela = TRUE)
+# booteval.relimp(boot) # print result
+# plot(booteval.relimp(boot,sort=TRUE)) # plot result
+
+
+# what i think makes most sense given everything
+
+model5 = lm(wins2 ~ 
+  wins1 + wins11 + wins500pct1 + 
+  corsi1 + corsiclose1 + corsi25close1 + offevents1 + offeventsclose1 + 
+  goalsfor1 + goalsagainst1 + 
+  goalsfirst1 + goalssecondfor1 + goalsthirdfor1 + 
+  pctgoals25for1 + pctgoals25against1 + 
+  shots1 + pctshot25for1 +  pctshot25against1 + 
+  pctgoalforpp1 + pctgoalagainstpp1 + 
+  penaltycallratio1 + 
+  pdo1 + 
+  pctgameshome2 + games5002)
+
+summary(model5)
+
+summary(model5)$r.sq 
+summary(model4)$r.sq 
+summary(model3)$r.sq 
+summary(model2)$r.sq 
+summary(model1)$r.sq 
+
+summary(model5)$adj.r.squared
+summary(model4)$adj.r.squared
+summary(model3)$adj.r.squared
+summary(model2)$adj.r.squared
+summary(model1)$adj.r.squared
+
+summary(model5)$sigma
+summary(model4)$sigma
+summary(model3)$sigma
+summary(model2)$sigma
+summary(model1)$sigma
+
+anova(model1, model2, model3, model4, model5)
+
+
+library(MASS)
+step <- stepAIC(model5, direction="both")
+step$anova # display results
+
+
+model6 = lm(wins2 ~ wins1 + corsi1 + corsiclose1 + corsi25close1 + 
+                     goalsfirst1 + pctgoals25against1 + shots1 + 
+                     pctgoalforpp1 + pctgameshome2)
 
 
 
-
-predicted8 = as.data.frame(predict(model8, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
-predicted7 = as.data.frame(predict(model7, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
 predicted6 = as.data.frame(predict(model6, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
 predicted5 = as.data.frame(predict(model5, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
 predicted4 = as.data.frame(predict(model4, seasonsteamscombinedtrim=select(seasonsteamscombinedtrim, -team), interval = "prediction"))
@@ -180,12 +202,8 @@ seasonsteamscombinedpredict$predicted3 = predicted3$fit
 seasonsteamscombinedpredict$predicted4 = predicted4$fit
 seasonsteamscombinedpredict$predicted5 = predicted5$fit
 seasonsteamscombinedpredict$predicted6 = predicted6$fit
-seasonsteamscombinedpredict$predicted7 = predicted7$fit
-seasonsteamscombinedpredict$predicted8 = predicted8$fit
 
-plot(seasonsteamscombinedpredict$predicted8, seasonsteamscombinedpredict$wins2)
-
-seasonsteamscombinedpredicttrim = select(seasonsteamscombinedpredict, team, wins2, wins1, predicted1, predicted2, predicted3, predicted4, predicted5, predicted6, predicted7, predicted8)
+seasonsteamscombinedpredicttrim = dplyr::select(seasonsteamscombinedpredict, team, wins2, wins1, predicted1, predicted2, predicted3, predicted4, predicted5, predicted6)
 
 seasonsteamscombinedpredicttrim$diffwins1 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$wins1
 seasonsteamscombinedpredicttrim$diffpredicted1 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted1
@@ -194,8 +212,8 @@ seasonsteamscombinedpredicttrim$diffpredicted3 = seasonsteamscombinedpredicttrim
 seasonsteamscombinedpredicttrim$diffpredicted4 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted4
 seasonsteamscombinedpredicttrim$diffpredicted5 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted5
 seasonsteamscombinedpredicttrim$diffpredicted6 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted6
-seasonsteamscombinedpredicttrim$diffpredicted7 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted7
-seasonsteamscombinedpredicttrim$diffpredicted8 = seasonsteamscombinedpredicttrim$wins2 - seasonsteamscombinedpredicttrim$predicted8
+
+# rmse
 
 sqrt(mean((seasonsteamscombinedpredicttrim$diffwins1^2)))
 sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted1^2)))
@@ -204,80 +222,111 @@ sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted3^2)))
 sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted4^2)))
 sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted5^2)))
 sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted6^2)))
-sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted7^2)))
-sqrt(mean((seasonsteamscombinedpredicttrim$diffpredicted8^2)))
 
 
-sqrt(median((seasonsteamscombinedpredicttrim$diffwins1^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted1^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted2^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted3^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted4^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted5^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted6^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted7^2)))
-sqrt(median((seasonsteamscombinedpredicttrim$diffpredicted8^2)))
-
-
-mean(abs(seasonsteamscombinedpredicttrim$diffwins1))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted1))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted2))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted3))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted4))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted5))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted6))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted7))
-mean(abs(seasonsteamscombinedpredicttrim$diffpredicted8))
-
-
-# model8 wins.  so what would it have told us?  how accurate is it?
 # from above we know that the avg diff in win pct is about 6-8% .. how many games it that?
 
-seasonsteamscombinedpredicttrim$wins1actual = seasonsteamscombinedpredicttrim$wins1*41 
-seasonsteamscombinedpredicttrim$predicted8actual = seasonsteamscombinedpredicttrim$predicted8*41
+seasonsteamscombinedpredicttrim$predicted1actual = round(seasonsteamscombinedpredicttrim$predicted1*41)
+seasonsteamscombinedpredicttrim$predicted2actual = round(seasonsteamscombinedpredicttrim$predicted2*41)
+seasonsteamscombinedpredicttrim$predicted3actual = round(seasonsteamscombinedpredicttrim$predicted3*41)
+seasonsteamscombinedpredicttrim$predicted4actual = round(seasonsteamscombinedpredicttrim$predicted4*41)
+seasonsteamscombinedpredicttrim$predicted5actual = round(seasonsteamscombinedpredicttrim$predicted5*41)
+seasonsteamscombinedpredicttrim$predicted6actual = round(seasonsteamscombinedpredicttrim$predicted6*41)
+seasonsteamscombinedpredicttrim$wins1actual = seasonsteamscombinedpredicttrim$wins1*41
 seasonsteamscombinedpredicttrim$wins2actual = seasonsteamscombinedpredicttrim$wins2*41
-seasonsteamscombinedpredicttrim$wins1windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$wins1actual))
-seasonsteamscombinedpredicttrim$predicted8windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual))
+seasonsteamscombinedpredicttrim$predicted1windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted1actual))
+seasonsteamscombinedpredicttrim$predicted2windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted2actual))
+seasonsteamscombinedpredicttrim$predicted3windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted3actual))
+seasonsteamscombinedpredicttrim$predicted4windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted4actual))
+seasonsteamscombinedpredicttrim$predicted5windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted5actual))
+seasonsteamscombinedpredicttrim$predicted6windiff = round(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted6actual))
 seasonsteamscombinedpredicttrim$bigdiffwin1win2 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$wins1actual) > 5, 1, 0)
 
-seasonsteamscombinedpredicttrim$predicted8within3 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual) < 4, 1, 0)
-seasonsteamscombinedpredicttrim$predicted8below3 = ifelse(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted8actual > 3, 1, 0)
-seasonsteamscombinedpredicttrim$predicted8above3 = ifelse(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual > 3, 1, 0)
+seasonsteamscombinedpredicttrim$predicted3within3 = ifelse(abs(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted3actual) < 4, 1, 0)
+seasonsteamscombinedpredicttrim$predicted3below3 = ifelse(seasonsteamscombinedpredicttrim$wins2actual - seasonsteamscombinedpredicttrim$predicted3actual > 3, 1, 0)
+seasonsteamscombinedpredicttrim$predicted3above3 = ifelse(seasonsteamscombinedpredicttrim$predicted3actual - seasonsteamscombinedpredicttrim$wins2actual > 3, 1, 0)
 
-seasonsteamscombinedpredicttrim$rawpredicted8windiff = round(seasonsteamscombinedpredicttrim$predicted8actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted1windiff = round(seasonsteamscombinedpredicttrim$predicted1actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted2windiff = round(seasonsteamscombinedpredicttrim$predicted2actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted3windiff = round(seasonsteamscombinedpredicttrim$predicted3actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted3windiff = round(seasonsteamscombinedpredicttrim$predicted4actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted5windiff = round(seasonsteamscombinedpredicttrim$predicted5actual - seasonsteamscombinedpredicttrim$wins2actual)
+seasonsteamscombinedpredicttrim$rawpredicted6windiff = round(seasonsteamscombinedpredicttrim$predicted6actual - seasonsteamscombinedpredicttrim$wins2actual)
 
-View(arrange(select(seasonsteamscombinedpredicttrim, team, wins1, predicted8, wins2, wins1actual, predicted8actual, wins2actual, wins1windiff, predicted8windiff, bigdiffwin1win2, predicted8within3, predicted8above3, predicted8below3),desc(bigdiffwin1win2), desc(wins1windiff)))
+View(arrange(dplyr::select(seasonsteamscombinedpredicttrim, team, wins1, wins2, predicted1, predicted2, predicted3, predicted4, predicted5, predicted6, wins1actual, wins2actual, predicted1actual, predicted2actual, predicted3actual, predicted4actual, predicted5actual, predicted6actual, predicted1windiff, predicted2windiff, predicted3windiff, predicted4windiff, predicted5windiff, predicted6windiff, bigdiffwin1win2), desc(bigdiffwin1win2), desc(abs(wins1actual - wins2actual))))
 
 seasonsteamscombinedpredicttrim %>%
-summarize(correct = sum(predicted8within3), above = sum(predicted8above3), below = sum(predicted8below3))
+summarize(correct = sum(predicted3within3), above = sum(predicted3above3), below = sum(predicted3below3))
 
-hist(seasonsteamscombinedpredicttrim$predicted8windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted1windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted2windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted3windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted4windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted5windiff)
+hist(seasonsteamscombinedpredicttrim$rawpredicted6windiff)
 
-mean(seasonsteamscombinedpredicttrim$wins1windiff)
-mean(seasonsteamscombinedpredicttrim$predicted8windiff)
-mean(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
+mean(seasonsteamscombinedpredicttrim$predicted1windiff)
+mean(seasonsteamscombinedpredicttrim$predicted2windiff)
+mean(seasonsteamscombinedpredicttrim$predicted3windiff)
+mean(seasonsteamscombinedpredicttrim$predicted4windiff)
+mean(seasonsteamscombinedpredicttrim$predicted5windiff)
+mean(seasonsteamscombinedpredicttrim$predicted6windiff)
+
+mean(seasonsteamscombinedpredicttrim$rawpredicted1windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted2windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted3windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted4windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted5windiff)
+mean(seasonsteamscombinedpredicttrim$rawpredicted6windiff)
 
 
-# within 5 either way = same 
-# above 5 = way better 
-# below 5% = way worse 
-# overpredict vs underpredict 
+
+# so models 3 and then 4 predicted most accurately with this dataset
+
+# we know that from this though: 
+anova(model1, model2, model3, model4, model5, model6)
+
+# they also both have the best r squared
+summary(model6)$r.sq 
+summary(model5)$r.sq 
+summary(model4)$r.sq 
+summary(model3)$r.sq 
+summary(model2)$r.sq 
+summary(model1)$r.sq 
+
+# but 4, 5, and 6 have much better adjusted r squareds, meaning model 3 could be overfitted..
+summary(model6)$adj.r.squared
+summary(model5)$adj.r.squared
+summary(model4)$adj.r.squared
+summary(model3)$adj.r.squared
+summary(model2)$adj.r.squared
+summary(model1)$adj.r.squared
+
+# model 4 also has the lowest rse, rollowed by model 6
+summary(model6)$sigma
+summary(model5)$sigma
+summary(model4)$sigma
+summary(model3)$sigma
+summary(model2)$sigma
+summary(model1)$sigma
+
+
+# based on this i would be inclined to use model 4 or 3.  possibly model 6 bc there are less variables.
+# but next steps are to consider transformations and interactions of variables, without overfitting..
+# and then test all these models on individual seasons to see how they all perform season by season
+
+
+
+
+
 
 # check to see how coefficients change when you add new variables to regressions
-
-
-
-# make dataframe or columns with actuals and predicted from each model and analyze abs diffs, mean, median, max, rank, spot check, etc
-# look at regression libraries in r
-
-
-
 
 # add categorical predictors
 # consider transformations of variables 
 # consider interaction effects 
 
- # sports analyst venn diagram (like drew's) - stats, hockey knowledge, hacking skills, communication/empathy with gm/coaches)
+# sports analyst venn diagram (like drew's) - stats, hockey knowledge, hacking skills, communication/empathy with gm/coaches)
 
 
 
@@ -333,7 +382,6 @@ mean(seasonsteamscombinedpredicttrim$rawpredicted8windiff)
 # this looks cool : http://www.arcticicehockey.com/2022/2/2/2674263/a-deeper-look-into-in-game-expected-points
 
 # http://www.acthomas.ca/howto-use-nhlscrapr-to-collect-nhl-rtss-data/
-
 
 
 
