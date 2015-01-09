@@ -126,7 +126,7 @@ full.rink = function () {
   
 }
 
-#full.rink()
+full.rink()
 #png("full-rink.png", width=860, height=2050); full.rink(); dev.off()
 
 
